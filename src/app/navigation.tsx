@@ -1,0 +1,3 @@
+import Link from "next/link";
+export const navigation=[{label:"Home",href:"/shop/home"},{label:"Parts & stock",href:"/"},{label:"New bill / sales",href:"/shop/sales"},{label:"Purchases",href:"/shop/purchases"},{label:"Customers",href:"/shop/customers"},{label:"Suppliers",href:"/shop/suppliers"},{label:"Returns",href:"/shop/returns"},{label:"Reports",href:"/shop/reports"},{label:"Settings & backup",href:"/shop/settings"}];
+export function ShopNavigation({active,owner}:{active:string;owner:boolean}){return <nav aria-label="Main navigation">{navigation.filter(n=>owner||!["/shop/returns","/shop/reports","/shop/settings"].includes(n.href)).map(n=><Link key={n.href} href={n.href} aria-current={n.href===active?"page":undefined}>{n.label}</Link>)}</nav>;}

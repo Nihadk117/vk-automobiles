@@ -1,0 +1,65 @@
+.metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(205px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.metric { padding: 21px; border: 1px solid var(--line); border-radius: var(--radius); background: white; box-shadow: var(--shadow); }
+.metric span { display: block; color: var(--muted); font-size: .8125rem; }
+.metric strong { display: block; margin-top: 9px; color: var(--ink); font-size: 1.6rem; font-weight: 650; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.quick-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+.quick-links a { display: flex; align-items: center; min-height: 48px; padding: 12px 15px; border: 1px solid #cbdcd1; border-radius: 7px; color: var(--green); background: #f8fbf8; font-size: .9375rem; font-weight: 600; text-decoration: none; transition: background-color 150ms ease, border-color 150ms ease; }
+.quick-links a:hover { background: #e9f3ec; border-color: #82a68e; }
+.quick-links a:active { background: #dcece1; }
+.part-picker { display: grid; grid-template-columns: 1fr 1.3fr auto; align-items: end; gap: 14px; margin: 24px 0; }
+.payment-grid { margin-top: 24px; }
+.entry-panel>.form-grid { margin-bottom: 24px; }
+.entry-panel fieldset>label+label { margin-top: 16px; }
+.total-value { display: block; margin: 4px 0; font-size: 1.75rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+.help { color: var(--muted); font-size: .8125rem; line-height: 1.6; }
+.empty-inline { margin: 0; padding: 22px 24px; color: var(--muted); font-size: .875rem; }
+.panel-title { padding: 22px 24px 0; }
+.settlement-summary { padding: 16px 18px; margin: 20px 0; border: 1px solid #cce1d2; border-radius: 8px; background: #edf5ef; font-size: .9375rem; font-weight: 600; }
+.receipt { margin-top: 26px; padding: 32px; border: 1px solid var(--line); border-radius: var(--radius); background: white; box-shadow: var(--shadow); }
+.receipt>header { padding-bottom: 20px; margin-bottom: 22px; text-align: center; border-bottom: 2px solid #dce7df; }
+.receipt>header h2 { margin: 0 0 4px; font-size: 1.625rem; color: #173e2f; }
+.receipt>header p { margin: 6px 0; font-size: .9375rem; }
+.receipt-category { font-weight: 600; color: var(--green); letter-spacing: .06em; }
+.receipt .receipt-address { white-space: pre-line; margin-top: 14px; }
+.receipt>header h3 { margin: 19px 0 0; font-size: 1rem; }
+.receipt>p { font-size: .9375rem; overflow-wrap: anywhere; }
+.receipt-tools { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 22px; }
+.receipt-tools fieldset { width: 100%; }
+.receipt-tools .confirm { margin: 16px 0; }
+.receipt table th:not(:first-child), .receipt table td:not(:first-child) { text-align: right; }
+.danger { color: #8a302b; background: #fff5f3; border-color: #dbb2ab; }
+.danger:hover:not(:disabled) { color: #75251f; background: #fbe5e0; border-color: #bb7468; }
+.danger:active:not(:disabled) { background: #f4d7d0; }
+.entry-panel li { margin: 8px 0; }
+td a[download] { display: inline-flex; align-items: center; min-height: 38px; padding: 7px 11px; border: 1px solid #c9dbce; border-radius: 6px; color: var(--green); background: #f8fbf8; font-size: .8125rem; font-weight: 600; text-decoration: none; }
+td a[download]:hover { color: var(--green-hover); background: #e8f2ea; border-color: #86a790; }
+input[type=file] { padding: 8px; }
+input::file-selector-button { margin-right: 10px; padding: 8px 12px; border: 1px solid #c5d5ca; border-radius: 5px; color: var(--green); background: #edf5ee; font: inherit; cursor: pointer; }
+@media(max-width:1100px) { .part-picker { grid-template-columns: 1fr 1fr; } .part-picker>button { grid-column: 1/-1; justify-self: end; } }
+@media(max-width:720px) {
+  .part-picker { display: flex; flex-direction: column; align-items: stretch; }
+  .part-picker>button { width: 100%; }
+  .metric-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .metric { padding: 19px; }
+  .quick-links { grid-template-columns: minmax(0, 1fr); }
+  .receipt { padding: 20px; }
+}
+@media print {
+  body { background: white; color: #111; font-size: 11pt; }
+  .sidebar, .topbar { display: none !important; }
+  .app-shell { display: block !important; }
+  .content-shell { width: 100%; }
+  main { max-width: none; padding: 0; }
+  main>* { display: none !important; }
+  main>.receipt { display: block !important; width: 100%; margin: 0; padding: 0; border: 0; border-radius: 0; box-shadow: none; }
+  .receipt-tools { display: none !important; }
+  .receipt .table-scroll { overflow: visible; }
+  .receipt table { min-width: 0; width: 100%; }
+  .receipt th, .receipt td { padding: 9px 8px; font-size: 10pt; }
+  .receipt tr { break-inside: avoid; }
+  .receipt>header h2 { font-size: 20pt; }
+  .receipt>header p { font-size: 11pt; }
+  .receipt>p { font-size: 10pt; }
+  .receipt th { background: #f1f1f1; color: #111; }
+  @page { size: A4; margin: 12mm; }
+}

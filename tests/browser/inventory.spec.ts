@@ -1,0 +1,83 @@
+import { test,expect } from "../auth-fixtures";
+test("a part survives reload; rack search and narrow layouts work",async({page})=>{
+  const errors:string[]=[];
+  page.on("pageerror",error=>errors.push(error.message));
+  const name=`Test filter ${Date.now()}`;
+  await page.goto("/");
+  await expect(page.getByRole("status")).toContainText("Local database connected");
+  await page.getByRole("button",{name:"Add a part"}).click();
+  await page.getByLabel("Part name",{exact:true}).fill(name);
+  await page.getByLabel("Compatible vehicles").fill("Test vehicle");
+  await page.getByLabel("Rack",{exact:true}).fill("TEST-A");
+  await page.getByLabel("Opening quantity").fill("10");
+  await page.getByLabel("Selling price").fill("280.25");
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button",{name:"Save part & stock"}).click();
+  await expect(page.getByRole("cell",{name:name,exact:false})).toBeVisible();
+  await page.reload();
+  await page.getByRole("searchbox").fill(name);
+  const row=page.getByRole("row").filter({hasText:name});
+  await expect(row).toContainText("280.25");
+  await expect(row).toContainText("10 pieces");
+  await page.getByRole("searchbox").fill("no-such-part-xyz");
+  await expect(page.getByText("No matching parts",{exact:true})).toBeVisible();
+  await page.setViewportSize({width:390,height:844});
+  await expect(page.getByRole("heading",{name:"Parts & stock"})).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+  await page.screenshot({path:"test-results/inventory-mobile.png",fullPage:true});
+  await page.setViewportSize({width:1440,height:1000});
+  await page.getByRole("searchbox").fill(name);
+  await page.screenshot({path:"test-results/inventory-desktop.png",fullPage:true});
+  expect(errors).toEqual([]);
+});
+test("edits details, corrects stock, and shows history after reload",async({page})=>{
+  const name=`Editable filter ${Date.now()}`;
+  await page.goto("/");
+  await expect(page.getByRole("status")).toContainText("Local database connected");
+  await expect(page).toHaveTitle(/VK AutoMobiles/i);
+  await page.getByRole("button",{name:"Add a part"}).click();
+  await page.getByLabel("Part name",{exact:true}).fill(name);
+  await page.getByLabel("Part number").fill(`AF-${Date.now()}`);
+  await page.getByLabel("Rack",{exact:true}).fill("A-02");
+  await page.getByLabel("Opening quantity").fill("10");
+  await page.getByLabel("Selling price").fill("280.25");
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button",{name:"Save part & stock"}).click();
+  await page.getByRole("searchbox").fill(name);
+  const row=page.getByRole("row").filter({hasText:name});
+  await row.getByRole("button",{name:"Edit",exact:true}).click();
+  await expect(page.getByLabel("Opening quantity")).toHaveCount(0);
+  await page.getByLabel("Selling price").fill("315.50");
+  await page.getByLabel("Low-stock level").fill("9");
+  await page.getByLabel("Rack",{exact:true}).fill("B-03");
+  await page.getByRole("button",{name:"Save changes"}).click();
+  await expect(row).toContainText("315.50");await expect(row).toContainText("10 pieces");
+  await row.getByRole("button",{name:"Adjust stock",exact:true}).click();
+  await page.getByLabel("Counted quantity").fill("8");
+  await page.getByLabel("Reason for correction").fill("Opening count mistake");
+  await page.getByRole("button",{name:"Record adjustment"}).click();
+  await expect(row).toContainText("8 pieces");await expect(row).toContainText("Low stock");
+  await page.reload();await page.getByRole("searchbox").fill(name);
+  await expect(row).toContainText("B-03");await expect(row).toContainText("315.50");
+  await row.getByRole("button",{name:"History",exact:true}).click();
+  await expect(page.getByRole("region",{name:"Part history"})).toContainText("Opening count mistake");
+  await expect(page.getByRole("region",{name:"Part history"})).toContainText("Selling price:");
+});
+test("cold load works when all non-local network requests are blocked",async({page,context})=>{
+  const external:string[]=[];
+  await context.route("**/*",route=>{
+    if(new URL(route.request().url()).hostname!=="127.0.0.1"){
+      external.push(route.request().url());return route.abort();
+    }
+    return route.continue();
+  });
+  await page.goto("/");
+  await expect(page.getByRole("status")).toContainText("Local database connected");
+  expect(external).toEqual([]);
+});
+test("API rejects invalid and cross-origin writes",async({request})=>{
+  const invalid=await request.post("/api/parts",{headers:{Origin:"http://127.0.0.1:3100"},data:{name:"Broken",rack:"A",openingQuantity:1.5,sellingPricePaise:100}});
+  expect(invalid.status()).toBe(400);
+  const forbidden=await request.post("/api/parts",{headers:{Origin:"https://example.com"},data:{name:"Broken",rack:"A",openingQuantity:1,sellingPricePaise:100}});
+  expect(forbidden.status()).toBe(403);
+});

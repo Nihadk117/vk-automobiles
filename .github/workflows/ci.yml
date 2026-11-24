@@ -1,0 +1,46 @@
+name: Application checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=moderate
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm run test:launcher
+        if: runner.os == 'Windows'
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - run: npm run test:auth
+      - run: npm run test:ui
+      - run: npm run test:watch-shop
+        env:
+          SHOP_QA_HEADLESS: '1'
+          SHOP_QA_SLOW_MS: '0'
+          SHOP_QA_RUN: ci-acceptance
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: acceptance-report-${{ matrix.os }}
+          path: |
+            qa-artifacts/ci-acceptance
+            qa-artifacts/browser
+            qa-artifacts/auth
+            qa-artifacts/ui-polish
+            qa-artifacts/launcher-*/results.json
+          retention-days: 14
